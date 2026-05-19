@@ -1,0 +1,142 @@
+{
+  "name": "Sagard — Portfolio Intelligence & Risk Escalation",
+  "active": true,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Webhook: Trigger Analysis",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sagard/analyze",
+        "responseMode": "responseNode"
+      },
+      "notes": "Inbound POST with { companyId } — fires this workflow per company.  Can also be invoked on a daily cron for the entire book."
+    },
+    {
+      "id": "2",
+      "name": "Fetch Company Documents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300],
+      "parameters": {
+        "url": "=http://backend:8000/api/companies/{{$json.companyId}}",
+        "method": "GET",
+        "responseFormat": "json"
+      },
+      "notes": "Pulls the company record + all internal documents + external signals already ingested in the platform."
+    },
+    {
+      "id": "3",
+      "name": "Run AI Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [720, 300],
+      "parameters": {
+        "url": "=http://backend:8000/api/analyze/{{$json.company.id}}",
+        "method": "POST",
+        "responseFormat": "json"
+      },
+      "notes": "Backend runs RAG over the docs, calls the LLM (or deterministic fallback), saves the report, and returns it."
+    },
+    {
+      "id": "4",
+      "name": "Persist Report (handled by backend)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [960, 300],
+      "parameters": {},
+      "notes": "The /api/analyze call already persists the report and creates an Alert row.  This node exists in the diagram for visibility."
+    },
+    {
+      "id": "5",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [1200, 300],
+      "parameters": {
+        "select": "channel",
+        "channelId": "#investments-portfolio-monitoring",
+        "text": "={{ $json.alert.body }}"
+      },
+      "notes": "Routes the formatted notification to the deal team's Slack channel.  Email-fanout can be added in parallel via a separate node."
+    },
+    {
+      "id": "6",
+      "name": "Wait for Human Review",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1440, 300],
+      "parameters": {
+        "resume": "webhook",
+        "webhookSuffix": "human-decision"
+      },
+      "notes": "Workflow pauses until /api/review/{companyId} is called from the UI.  The analyst's decision (escalate | diligence | reviewed) resumes the workflow."
+    },
+    {
+      "id": "7",
+      "name": "Branch on Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1680, 300],
+      "parameters": {
+        "rules": {
+          "values": [
+            { "outputKey": "escalate", "conditions": { "options": { "caseSensitive": true }, "combinator": "and", "conditions": [{ "leftValue": "={{$json.decision}}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "escalate" }] } },
+            { "outputKey": "diligence", "conditions": { "options": { "caseSensitive": true }, "combinator": "and", "conditions": [{ "leftValue": "={{$json.decision}}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "diligence" }] } },
+            { "outputKey": "reviewed", "conditions": { "options": { "caseSensitive": true }, "combinator": "and", "conditions": [{ "leftValue": "={{$json.decision}}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "reviewed" }] } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "8",
+      "name": "IC Calendar Invite",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.2,
+      "position": [1920, 180],
+      "parameters": { "operation": "create", "calendar": "investments@sagard.com" },
+      "notes": "Creates an IC review block in the next-available Investment Committee slot."
+    },
+    {
+      "id": "9",
+      "name": "Open Diligence Task in Asana",
+      "type": "n8n-nodes-base.asana",
+      "typeVersion": 1,
+      "position": [1920, 300],
+      "parameters": { "operation": "create", "workspace": "Sagard Investments" },
+      "notes": "Opens a tracked diligence task with the AI-generated follow-up questions pre-populated."
+    },
+    {
+      "id": "10",
+      "name": "Log Reviewed",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1920, 420],
+      "parameters": {},
+      "notes": "Records the no-op closure for audit purposes; no downstream action."
+    }
+  ],
+  "connections": {
+    "Webhook: Trigger Analysis":        { "main": [[{ "node": "Fetch Company Documents", "type": "main", "index": 0 }]] },
+    "Fetch Company Documents":          { "main": [[{ "node": "Run AI Analysis", "type": "main", "index": 0 }]] },
+    "Run AI Analysis":                  { "main": [[{ "node": "Persist Report (handled by backend)", "type": "main", "index": 0 }]] },
+    "Persist Report (handled by backend)": { "main": [[{ "node": "Send Slack Alert", "type": "main", "index": 0 }]] },
+    "Send Slack Alert":                 { "main": [[{ "node": "Wait for Human Review", "type": "main", "index": 0 }]] },
+    "Wait for Human Review":            { "main": [[{ "node": "Branch on Decision", "type": "main", "index": 0 }]] },
+    "Branch on Decision":               {
+      "main": [
+        [{ "node": "IC Calendar Invite", "type": "main", "index": 0 }],
+        [{ "node": "Open Diligence Task in Asana", "type": "main", "index": 0 }],
+        [{ "node": "Log Reviewed", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "meta": {
+    "humanInTheLoop": "Wait for Human Review node — the analyst chooses one of {escalate, diligence, reviewed}. The AI never makes the final investment decision.",
+    "fallback": "If the LLM call fails, the backend produces a deterministic rule-based report so the workflow always completes."
+  }
+}

@@ -1,0 +1,43 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.Python
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Local runtime data ---
+sagard.db
+sagard.db-journal
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# --- Secrets / env ---
+.env
+.env.local
+.env.*.local
+
+# --- Editor / OS junk ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Build artifacts ---
+dist/
+build/
+*.egg
+
+# --- Frontend (none right now — React is CDN-loaded — but future-proofing) ---
+node_modules/
+frontend/dist/
+frontend/build/

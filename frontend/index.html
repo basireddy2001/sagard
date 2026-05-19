@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sagard AI Portfolio Intelligence Copilot</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    --navy-900:#0b1f3a;
+    --navy-800:#11294a;
+    --navy-700:#173762;
+    --navy-100:#e8edf5;
+    --gold:#c9a44d;
+    --gold-soft:#f5ecd2;
+    --ink:#1a2236;
+    --muted:#5a6b85;
+    --line:#dde3ee;
+    --bg:#f6f7fb;
+    --card:#ffffff;
+    --green:#1d7a4c;
+    --green-soft:#dff4e7;
+    --amber:#a76700;
+    --amber-soft:#fdecc8;
+    --red:#a82828;
+    --red-soft:#fadcdc;
+    --shadow: 0 1px 2px rgba(15,30,60,0.04), 0 4px 18px rgba(15,30,60,0.06);
+  }
+  *{box-sizing:border-box}
+  html,body,#root{height:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size:14px;
+    line-height:1.5;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:var(--navy-900);
+    color:#fff;
+    border-bottom:3px solid var(--gold);
+    padding:14px 32px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand-mark{
+    width:34px;height:34px;border-radius:6px;
+    background:linear-gradient(135deg,var(--gold),#b1872f);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--navy-900);font-weight:800;letter-spacing:.5px;
+  }
+  .brand-title{font-weight:700;letter-spacing:.4px}
+  .brand-sub{font-size:12px;color:#9fb1cc}
+  .nav{display:flex;gap:6px}
+  .nav button{
+    background:transparent;color:#cfd9eb;border:1px solid transparent;
+    padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;
+  }
+  .nav button:hover{background:rgba(255,255,255,0.06)}
+  .nav button.active{background:rgba(255,255,255,0.10);color:#fff;border-color:rgba(255,255,255,0.18)}
+
+  /* ---------- Layout ---------- */
+  .page{max-width:1280px;margin:0 auto;padding:28px 32px 64px}
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:24px;flex-wrap:wrap}
+  .page-title{font-size:22px;font-weight:700;letter-spacing:.2px;color:var(--navy-900)}
+  .page-desc{color:var(--muted);max-width:760px;margin-top:4px}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    box-shadow:var(--shadow);
+  }
+  .card-pad{padding:20px}
+  .card-head{
+    padding:14px 20px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .card-title{font-weight:700;color:var(--navy-900);font-size:14px;letter-spacing:.3px;text-transform:uppercase}
+
+  .grid{display:grid;gap:16px}
+  .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media(max-width:980px){.grid-3,.grid-2{grid-template-columns:1fr}}
+
+  /* ---------- Company card ---------- */
+  .co-card{display:flex;flex-direction:column;cursor:pointer;transition:transform .08s ease, box-shadow .12s ease}
+  .co-card:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(15,30,60,0.06),0 10px 24px rgba(15,30,60,0.08)}
+  .co-card-top{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+  .co-name{font-size:16px;font-weight:700;color:var(--navy-900)}
+  .co-headline{color:var(--muted);font-size:13px;margin-top:4px;min-height:36px}
+  .co-meta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .chip{
+    display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;
+    background:var(--navy-100);color:var(--navy-800);font-weight:600;letter-spacing:.3px;
+  }
+  .co-card-bot{padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+  .stat{font-size:12px;color:var(--muted)}
+  .stat b{display:block;color:var(--ink);font-size:14px;margin-top:2px;font-variant-numeric:tabular-nums}
+
+  /* ---------- Risk badges ---------- */
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;border:1px solid transparent}
+  .badge-dot{width:6px;height:6px;border-radius:50%}
+  .risk-low{background:var(--green-soft);color:var(--green);border-color:#bfe5cf}
+  .risk-low .badge-dot{background:var(--green)}
+  .risk-medium{background:var(--amber-soft);color:var(--amber);border-color:#f3d28c}
+  .risk-medium .badge-dot{background:var(--amber)}
+  .risk-high{background:var(--red-soft);color:var(--red);border-color:#efbcbc}
+  .risk-high .badge-dot{background:var(--red)}
+  .risk-none{background:#eef0f5;color:#5a6b85;border-color:var(--line)}
+  .risk-none .badge-dot{background:#9aa6bf}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:9px 16px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;
+    border:1px solid var(--navy-800);background:var(--navy-800);color:#fff;letter-spacing:.2px;
+  }
+  .btn:hover{background:var(--navy-700);border-color:var(--navy-700)}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .btn-ghost{background:#fff;color:var(--navy-800);border-color:var(--line)}
+  .btn-ghost:hover{background:#f1f4fa;border-color:#c8d0e0}
+  .btn-gold{background:var(--gold);border-color:var(--gold);color:var(--navy-900)}
+  .btn-gold:hover{background:#b88f3a;border-color:#b88f3a}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* ---------- Tables / lists ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{
+    text-align:left;font-weight:600;color:var(--muted);
+    text-transform:uppercase;font-size:11px;letter-spacing:.5px;
+    padding:10px 14px;border-bottom:1px solid var(--line);background:#fafbfd;
+  }
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+
+  ul.clean{margin:0;padding-left:18px}
+  ul.clean li{margin:4px 0}
+  ul.checks{list-style:none;padding:0;margin:0}
+  ul.checks li{padding:8px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px}
+  ul.checks li:last-child{border-bottom:none}
+  ul.checks li:before{
+    content:"";flex:0 0 8px;margin-top:8px;width:8px;height:8px;border-radius:50%;
+  }
+  ul.checks.pos li:before{background:var(--green)}
+  ul.checks.risk li:before{background:var(--red)}
+  ul.checks.q li:before{background:var(--gold)}
+
+  .sig-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-right:8px}
+  .sig-positive{background:var(--green-soft);color:var(--green)}
+  .sig-negative{background:var(--red-soft);color:var(--red)}
+  .sig-neutral{background:#eef0f5;color:#5a6b85}
+
+  /* ---------- Workflow steps ---------- */
+  .wf{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+  .wf-step{
+    flex:1 1 0;min-width:200px;background:#fff;border:1px solid var(--line);
+    border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:8px;position:relative;
+  }
+  .wf-step .num{
+    width:26px;height:26px;border-radius:50%;background:var(--navy-800);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
+  }
+  .wf-step h4{margin:0;color:var(--navy-900);font-size:14px}
+  .wf-step p{margin:0;color:var(--muted);font-size:13px}
+  .wf-arrow{display:flex;align-items:center;color:#a8b3c9;font-size:18px}
+  .wf-step.tag-human{background:var(--gold-soft);border-color:#e7d59a}
+
+  /* ---------- Alert / notification panel ---------- */
+  .alert-row{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .alert-row:last-child{border-bottom:none}
+  .alert-meta{flex:0 0 180px;color:var(--muted);font-size:12px}
+  .alert-body{flex:1;font-size:13px;white-space:pre-wrap}
+
+  .kv{display:grid;grid-template-columns:160px 1fr;gap:8px 16px;font-size:13px}
+  .kv dt{color:var(--muted)}
+  .kv dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .doc-block{padding:14px 0;border-bottom:1px solid var(--line)}
+  .doc-block:last-child{border-bottom:none}
+  .doc-title{font-weight:700;color:var(--navy-900);margin-bottom:4px}
+  .doc-type{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .doc-content{font-size:13px;color:#2c3a55;white-space:pre-wrap;max-height:160px;overflow:auto;background:#fafbfd;border:1px solid var(--line);border-radius:6px;padding:10px}
+
+  .spinner{
+    width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;
+    border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+
+  .toast{
+    position:fixed;bottom:28px;right:28px;background:var(--navy-900);color:#fff;
+    padding:12px 18px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);
+    font-size:13px;z-index:50;animation:slideup .2s ease;
+  }
+  @keyframes slideup{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+  .footer{color:var(--muted);font-size:12px;text-align:center;padding:24px 0 8px}
+
+  details.evidence{border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0;background:#fafbfd}
+  details.evidence summary{cursor:pointer;font-weight:600;color:var(--navy-800)}
+  details.evidence ul{margin-top:8px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useMemo, useCallback } = React;
+const API = ""; // same origin
+
+// ---------- API helpers ----------
+async function api(path, opts={}) {
+  const r = await fetch(API + path, {
+    headers:{'Content-Type':'application/json'},
+    ...opts,
+  });
+  if(!r.ok){
+    const t = await r.text();
+    throw new Error(`${r.status} ${t}`);
+  }
+  return r.json();
+}
+
+function fmtUsd(n){
+  if(n>=1e9) return `$${(n/1e9).toFixed(1)}B`;
+  if(n>=1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if(n>=1e3) return `$${(n/1e3).toFixed(0)}K`;
+  return `$${n}`;
+}
+function fmtDate(s){
+  if(!s) return '—';
+  const d = new Date(s);
+  return d.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+}
+
+function RiskBadge({score}){
+  if(!score) return <span className="badge risk-none"><span className="badge-dot"></span>Not Analyzed</span>;
+  const cls = score==='High'?'risk-high':score==='Medium'?'risk-medium':'risk-low';
+  return <span className={"badge "+cls}><span className="badge-dot"></span>{score} Risk</span>;
+}
+
+// ---------- Top bar ----------
+function TopBar({view, setView}){
+  const items = [
+    ['dashboard','Dashboard'],
+    ['workflow','Workflow'],
+    ['alerts','Alerts'],
+  ];
+  return (
+    <div className="topbar">
+      <div className="brand" onClick={()=>setView('dashboard')} style={{cursor:'pointer'}}>
+        <div className="brand-mark">S</div>
+        <div>
+          <div className="brand-title">SAGARD</div>
+          <div className="brand-sub">AI Portfolio Intelligence Copilot</div>
+        </div>
+      </div>
+      <div className="nav">
+        {items.map(([k,l])=>(
+          <button key={k} className={view===k?'active':''} onClick={()=>setView(k)}>{l}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Dashboard ----------
+function Dashboard({onOpen}){
+  const [companies, setCompanies] = useState(null);
+  const [err, setErr] = useState(null);
+  useEffect(()=>{
+    api('/api/companies').then(setCompanies).catch(e=>setErr(e.message));
+  },[]);
+  if(err) return <div className="page"><div className="empty">Error: {err}</div></div>;
+  if(!companies) return <div className="page"><div className="empty">Loading portfolio…</div></div>;
+  return (
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <div className="page-title">Portfolio Companies</div>
+          <div className="page-desc">
+            Monitored book of {companies.length} companies. Run AI risk analysis on demand,
+            review evidence-backed signals, and route escalations to the investment team.
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-3">
+        {companies.map(c=>(
+          <div key={c.id} className="card co-card" onClick={()=>onOpen(c.id)}>
+            <div className="co-card-top">
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
+                <div className="co-name">{c.name}</div>
+                <RiskBadge score={c.latest_risk_score}/>
+              </div>
+              <div className="co-headline">{c.headline}</div>
+              <div className="co-meta">
+                <span className="chip">{c.sector}</span>
+                <span className="chip">{c.stage}</span>
+                {c.has_open_alert && <span className="chip" style={{background:'#fdecc8',color:'#a76700'}}>Open Alert</span>}
+              </div>
+            </div>
+            <div className="co-card-bot">
+              <div className="stat">Invested<b>{fmtUsd(c.invested_amount_usd)}</b></div>
+              <div className="stat">Ownership<b>{c.ownership_pct.toFixed(1)}%</b></div>
+              <div className="stat" style={{textAlign:'right'}}>
+                <b style={{color:'var(--navy-800)',fontSize:12,fontWeight:600}}>Open →</b>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Company Analysis Page ----------
+function CompanyPage({id, onBack, onToast}){
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [ragEvidence, setRagEvidence] = useState(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [lastAlert, setLastAlert] = useState(null);
+
+  const load = useCallback(()=>{
+    setErr(null);
+    api(`/api/companies/${id}`).then(setData).catch(e=>setErr(e.message));
+  },[id]);
+  useEffect(load,[load]);
+
+  async function runAnalysis(){
+    setAnalyzing(true);
+    try{
+      const res = await api(`/api/analyze/${id}`,{method:'POST'});
+      setRagEvidence(res.rag_evidence);
+      setLastAlert(res.alert);
+      onToast(`Analysis complete · ${res.report.risk_score} risk · alert sent`);
+      load();
+    } catch(e){ onToast('Analysis failed: '+e.message); }
+    finally{ setAnalyzing(false); }
+  }
+
+  async function submitReview(decision){
+    setReviewing(true);
+    try{
+      await api(`/api/review/${id}`,{
+        method:'POST',
+        body: JSON.stringify({
+          decision,
+          reviewer:'Hugh (analyst)',
+          notes: null,
+          report_id: data?.latest_report?.id ?? null,
+        }),
+      });
+      const labels = {escalate:'Escalated to Investment Committee',diligence:'More diligence requested',reviewed:'Marked as Reviewed'};
+      onToast(labels[decision]);
+      load();
+    } catch(e){ onToast('Failed: '+e.message); }
+    finally{ setReviewing(false); }
+  }
+
+  if(err) return <div className="page"><div className="empty">Error: {err}</div></div>;
+  if(!data) return <div className="page"><div className="empty">Loading company…</div></div>;
+  const c = data.company;
+  const r = data.latest_report;
+
+  return (
+    <div className="page">
+      <div style={{marginBottom:14}}>
+        <button className="btn btn-ghost" onClick={onBack}>← Back to Portfolio</button>
+      </div>
+      <div className="page-head">
+        <div>
+          <div style={{display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
+            <div className="page-title">{c.name}</div>
+            <RiskBadge score={c.latest_risk_score}/>
+          </div>
+          <div className="page-desc">{c.headline}</div>
+          <div className="co-meta" style={{marginTop:8}}>
+            <span className="chip">{c.sector}</span>
+            <span className="chip">{c.stage}</span>
+            <span className="chip">{c.last_round}</span>
+            <span className="chip">Invested {fmtUsd(c.invested_amount_usd)} · {c.ownership_pct.toFixed(1)}%</span>
+          </div>
+        </div>
+        <div className="btn-row">
+          <button className="btn btn-gold" onClick={runAnalysis} disabled={analyzing}>
+            {analyzing ? <><span className="spinner"/>Analyzing…</> : (r ? 'Re-run AI Analysis' : 'Run AI Analysis')}
+          </button>
+        </div>
+      </div>
+
+      {/* AI report */}
+      {r ? (
+        <div className="card" style={{marginBottom:20}}>
+          <div className="card-head">
+            <div className="card-title">AI Risk Report</div>
+            <div style={{display:'flex',gap:10,alignItems:'center'}}>
+              <span className="chip" style={{background:r.used_real_llm?'#eaf3ff':'#eef0f5',color:r.used_real_llm?'#0b5fae':'#5a6b85'}}>
+                {r.used_real_llm ? 'LLM-generated' : 'Deterministic (no API key)'}
+              </span>
+              <span style={{fontSize:12,color:'var(--muted)'}}>{fmtDate(r.created_at)}</span>
+            </div>
+          </div>
+          <div className="card-pad">
+            <div style={{display:'flex',gap:16,alignItems:'flex-start',flexWrap:'wrap'}}>
+              <div style={{flex:'0 0 200px'}}>
+                <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Risk Score</div>
+                <div style={{display:'flex',alignItems:'center',gap:10}}>
+                  <RiskBadge score={r.risk_score}/>
+                </div>
+                <div style={{fontSize:12,color:'var(--muted)',marginTop:12,lineHeight:1.5}}>{r.risk_rationale}</div>
+              </div>
+              <div style={{flex:'1 1 320px',minWidth:280}}>
+                <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Executive Summary</div>
+                <div>{r.summary}</div>
+                <div style={{marginTop:14,fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Recommended Next Step</div>
+                <div style={{padding:12,background:'var(--gold-soft)',border:'1px solid #e7d59a',borderRadius:6,fontSize:13}}>
+                  {r.recommended_action}
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-2" style={{marginTop:18}}>
+              <div>
+                <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Positive Signals</div>
+                <ul className="checks pos">{r.positive_signals.map((s,i)=><li key={i}><span>{s}</span></li>)}</ul>
+              </div>
+              <div>
+                <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Risk Signals</div>
+                <ul className="checks risk">{r.risk_signals.map((s,i)=><li key={i}><span>{s}</span></li>)}</ul>
+              </div>
+            </div>
+            <div style={{marginTop:18}}>
+              <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Follow-up Diligence Questions</div>
+              <ul className="checks q">{r.followup_questions.map((s,i)=><li key={i}><span>{s}</span></li>)}</ul>
+            </div>
+
+            {ragEvidence && (
+              <details className="evidence" style={{marginTop:18}}>
+                <summary>RAG evidence used for this analysis ({ragEvidence.length} queries)</summary>
+                {ragEvidence.map((b,i)=>(
+                  <div key={i} style={{marginTop:10}}>
+                    <div style={{fontSize:12,fontWeight:600,color:'var(--navy-800)'}}>{b.question}</div>
+                    <ul className="clean">
+                      {b.evidence.map((e,j)=>(
+                        <li key={j} style={{fontSize:12,color:'var(--muted)'}}>
+                          <i>{e.doc_type} · {e.doc_title}</i> — {e.excerpt.slice(0,180)}…
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </details>
+            )}
+
+            {/* Human decision */}
+            <div style={{marginTop:22,padding:16,background:'#fafbfd',border:'1px dashed var(--line)',borderRadius:8}}>
+              <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:8}}>Human Decision (required)</div>
+              <div style={{color:'var(--ink)',marginBottom:12,fontSize:13}}>
+                The AI does not make the final call. As the deal-team analyst, choose the next step:
+              </div>
+              <div className="btn-row">
+                <button className="btn" onClick={()=>submitReview('escalate')} disabled={reviewing}>Escalate to IC</button>
+                <button className="btn btn-ghost" onClick={()=>submitReview('diligence')} disabled={reviewing}>Request More Diligence</button>
+                <button className="btn btn-ghost" onClick={()=>submitReview('reviewed')} disabled={reviewing}>Mark as Reviewed</button>
+              </div>
+              {data.reviews.length>0 && (
+                <div style={{marginTop:14,fontSize:12,color:'var(--muted)'}}>
+                  Most recent decision: <b style={{color:'var(--ink)'}}>{data.reviews[0].decision}</b> by {data.reviews[0].reviewer} · {fmtDate(data.reviews[0].decided_at)}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="card" style={{marginBottom:20}}>
+          <div className="card-pad" style={{display:'flex',gap:16,alignItems:'center'}}>
+            <div style={{flex:1}}>
+              <b>No AI report yet.</b>
+              <div style={{color:'var(--muted)',marginTop:4}}>
+                Click "Run AI Analysis" to ingest the {data.documents.length} internal documents
+                and {data.signals.length} external signals, then generate the risk report.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Internal documents */}
+      <div className="card" style={{marginBottom:20}}>
+        <div className="card-head"><div className="card-title">Internal Documents ({data.documents.length})</div></div>
+        <div className="card-pad">
+          {data.documents.map(d=>(
+            <div className="doc-block" key={d.id}>
+              <div className="doc-type">{d.doc_type.replace('_',' ')}</div>
+              <div className="doc-title">{d.title}</div>
+              <div className="doc-content">{d.content}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* External signals */}
+      <div className="card" style={{marginBottom:20}}>
+        <div className="card-head"><div className="card-title">External Signals ({data.signals.length})</div></div>
+        <table>
+          <thead><tr><th>Source</th><th>Signal</th><th>Sentiment</th><th>Captured</th></tr></thead>
+          <tbody>
+            {data.signals.map(s=>(
+              <tr key={s.id}>
+                <td><span className="chip">{s.source}</span></td>
+                <td>{s.signal}</td>
+                <td><span className={"sig-tag sig-"+s.sentiment}>{s.sentiment}</span></td>
+                <td style={{color:'var(--muted)'}}>{fmtDate(s.captured_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Decision history */}
+      {data.reviews.length>0 && (
+        <div className="card" style={{marginBottom:20}}>
+          <div className="card-head"><div className="card-title">Decision History</div></div>
+          <table>
+            <thead><tr><th>When</th><th>Reviewer</th><th>Decision</th><th>Notes</th></tr></thead>
+            <tbody>
+              {data.reviews.map(r=>(
+                <tr key={r.id}>
+                  <td>{fmtDate(r.decided_at)}</td>
+                  <td>{r.reviewer}</td>
+                  <td><b style={{color:'var(--navy-900)'}}>{r.decision}</b></td>
+                  <td style={{color:'var(--muted)'}}>{r.notes || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- Workflow View ----------
+function WorkflowView(){
+  const [wf, setWf] = useState(null);
+  useEffect(()=>{ api('/api/workflow').then(setWf); },[]);
+  if(!wf) return <div className="page"><div className="empty">Loading…</div></div>;
+  return (
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <div className="page-title">{wf.name}</div>
+          <div className="page-desc">
+            End-to-end orchestration. Mirrors <code>n8n-workflow.json</code>: in production this graph
+            would run as a scheduled n8n workflow per portfolio company, but it can also be triggered
+            on-demand from the dashboard.
+          </div>
+        </div>
+      </div>
+      <div className="wf">
+        {wf.steps.map((s,i)=>(
+          <React.Fragment key={s.key}>
+            <div className={"wf-step " + (s.key==='review'?'tag-human':'')}>
+              <div className="num">{i+1}</div>
+              <h4>{s.title}</h4>
+              <p>{s.desc}</p>
+              {s.key==='review' && <span className="chip" style={{alignSelf:'flex-start',background:'#fdecc8',color:'#a76700'}}>Human in the loop</span>}
+            </div>
+            {i<wf.steps.length-1 && <div className="wf-arrow">→</div>}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="card" style={{marginTop:24}}>
+        <div className="card-head"><div className="card-title">Integration Map</div></div>
+        <div className="card-pad">
+          <dl className="kv">
+            <dt>Document store</dt><dd>SQLite + filesystem (mock; swap for SharePoint/S3 in prod)</dd>
+            <dt>Retrieval</dt><dd>In-memory hashed embeddings + cosine search (swap for OpenAI/Voyage + Chroma)</dd>
+            <dt>LLM</dt><dd>Anthropic Claude / OpenAI GPT (API key auto-detected, deterministic fallback otherwise)</dd>
+            <dt>External signals</dt><dd>Mocked competitor / hiring / reviews / news feeds (PitchBook + LinkedIn + G2 in prod)</dd>
+            <dt>Notification</dt><dd>Slack webhook (or simulated channel logged to DB)</dd>
+            <dt>Orchestration</dt><dd>n8n workflow JSON included; triggered by webhook or schedule</dd>
+            <dt>Human decision</dt><dd>Recorded in <code>human_reviews</code> table; auditable trail</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Alerts ----------
+function AlertsView(){
+  const [alerts, setAlerts] = useState(null);
+  useEffect(()=>{ api('/api/alerts').then(setAlerts); },[]);
+  if(!alerts) return <div className="page"><div className="empty">Loading alerts…</div></div>;
+  return (
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <div className="page-title">Notifications Sent</div>
+          <div className="page-desc">
+            Slack-style alerts dispatched after each AI analysis run. In production this routes to
+            the <code>#investments-portfolio-monitoring</code> channel and the deal team's email distro.
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        {alerts.length===0 ? (
+          <div className="empty">No alerts yet. Run an analysis from the dashboard to generate one.</div>
+        ) : alerts.map(a=>(
+          <div className="alert-row" key={a.id}>
+            <div className="alert-meta">
+              <div><b style={{color:'var(--navy-900)'}}>{a.company_name}</b></div>
+              <div style={{marginTop:4}}><RiskBadge score={a.risk_score}/></div>
+              <div style={{marginTop:6}}>To: <code>{a.recipient}</code></div>
+              <div style={{marginTop:2}}>{fmtDate(a.created_at)}</div>
+              <div style={{marginTop:4,color:a.delivered?'var(--green)':'var(--red)'}}>
+                {a.delivered ? '✓ delivered' : '✗ failed'}
+              </div>
+            </div>
+            <div className="alert-body">
+              <div style={{fontWeight:700,marginBottom:6,color:'var(--navy-900)'}}>{a.subject}</div>
+              {a.body}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------- App ----------
+function App(){
+  const [view, setView] = useState('dashboard');
+  const [openId, setOpenId] = useState(null);
+  const [toast, setToast] = useState(null);
+  const showToast = (m) => { setToast(m); setTimeout(()=>setToast(null), 3200); };
+
+  const open = (id) => { setOpenId(id); setView('company'); };
+  const back = () => { setOpenId(null); setView('dashboard'); };
+  const setViewSafe = (v) => { setOpenId(null); setView(v); };
+
+  return (
+    <>
+      <TopBar view={view==='company'?'dashboard':view} setView={setViewSafe}/>
+      {view==='dashboard' && <Dashboard onOpen={open}/>}
+      {view==='company' && openId && <CompanyPage id={openId} onBack={back} onToast={showToast}/>}
+      {view==='workflow' && <WorkflowView/>}
+      {view==='alerts' && <AlertsView/>}
+      <div className="footer">Sagard AI Portfolio Intelligence Copilot · prototype · {new Date().getFullYear()}</div>
+      {toast && <div className="toast">{toast}</div>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
