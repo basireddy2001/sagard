@@ -1,10 +1,6 @@
 # Sagard AI Portfolio Intelligence & Risk Escalation Copilot
 
-A lightweight, end-to-end prototype of an AI system for an Investments-team member at Sagard. It ingests internal portfolio-company documents, fuses them with external market signals, runs a RAG-backed risk analysis, and routes a Slack-style alert to the deal team — with the **final decision left to a human analyst.**
-
-This is a take-home submission for the Sagard AI Builder / Forward Deployed Engineer role.
-
----
+A lightweight, end-to-end prototype of an AI system for an Investments-team member at Sagard. It ingests internal portfolio-company documents, fuses them with external market signals, runs a RAG-backed risk analysis, and routes a Slack-style alert to the deal team with the **final decision left to a human analyst.**
 
 ## 1. What the system does
 
@@ -141,4 +137,4 @@ sagard/
 
 ---
 
-**Author:** Hugh — submission for Sagard Engineering AI Builder / FDE.
+**Author:** Naga Basi Reddy — submission for Sagard Engineering AI Builder / FDE.
