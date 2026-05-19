@@ -1,7 +1,5 @@
 # Submission Explanation
 
-**Word count: ~245**
-
 ## What the human can now do that they couldn't before
 A Sagard analyst now opens a single dashboard and sees an evidence-backed risk read for every company in their book — built from internal documents, financials, board notes and external signals in seconds, not days. They can re-run the analysis on demand after any new quarterly update, drill into the exact document excerpts the model used (the RAG trail is exposed in the UI), and route the case to IC, more diligence, or "reviewed" with one click. The result is monitoring *coverage* an analyst couldn't realistically maintain manually across 50+ companies.
 
